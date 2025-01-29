@@ -13,24 +13,24 @@ nuek_df = spark.read \
     .option("inferSchema", "true") \
     .csv('./nuek-vuh3.csv')
 
+# Розподіляємо датасет на 2 частини
 nuek_repart = nuek_df.repartition(2)
 
+# Обробляємо дані
 nuek_processed = nuek_repart \
     .where("final_priority < 3") \
     .select("unit_id", "final_priority") \
     .groupBy("unit_id") \
-    .count()\
-    .cache()  # Додано функцію cache
+    .count()
 
-# Проміжний action: collect
-nuek_processed.collect()
+# Фільтруємо за умовою count > 2
+nuek_processed = nuek_processed.where("count > 2")
 
-# Ось ТУТ додано рядок
-nuek_processed = nuek_processed.where("count>2")
+# Виводимо оброблені дані
+print(nuek_processed.collect())
 
-nuek_processed.collect()
-
-input("Press Enter to continue...5")
+# Затримка перед завершенням
+input("Press Enter to continue...")
 
 # Закриваємо сесію Spark
 spark.stop()
